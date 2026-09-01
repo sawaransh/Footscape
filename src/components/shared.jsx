@@ -76,7 +76,7 @@ export function FixtureTile({ fixture, onPress }) {
 
   return (
     <div
-      className="card"
+      className="card fixture-tile"
       onClick={() => onPress(fixture.id)}
       style={{ padding: '16px', cursor: 'pointer', transition: 'box-shadow 0.15s' }}
       onMouseEnter={e => e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.1)'}

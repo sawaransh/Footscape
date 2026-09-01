@@ -101,7 +101,7 @@ export function FixtureDetailPage({ params, navigate }) {
             <div style={{ marginTop: 14 }}>
               {!currentUser.isAdmin && (
                 <button
-                  className="btn btn-primary"
+                  className={`btn btn-primary rsvp-button ${isRsvped ? 'rsvp-button--joined' : ''}`}
                   onClick={() => toggleRsvp(fixture.id)}
                   style={{ maxWidth: '100%' }}
                 >
