@@ -1,9 +1,11 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { LogIn, UserPlus } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
 export function AuthPage() {
   const { login, signup } = useApp();
+  const navigate = useNavigate();
   const [mode, setMode] = useState('login');
   const [form, setForm] = useState({
     name: '',
@@ -28,6 +30,7 @@ export function AuthPage() {
     setIsSubmitting(false);
 
     if (!result.ok) setError(result.message);
+    if (result.ok && result.isNewUser) navigate('/connect');
   };
 
   const isLogin = mode === 'login';

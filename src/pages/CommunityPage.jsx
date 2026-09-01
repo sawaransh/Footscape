@@ -1,4 +1,5 @@
 import { ArrowLeft, MoreHorizontal, UserPlus } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { BottomNav } from '../components/shared';
 
@@ -20,7 +21,7 @@ export function CommunityPage({ navigate }) {
             <p style={{ color: 'var(--text-muted)', marginTop: 8, marginBottom: 20 }}>
               Create a community for your group or use an invite code to join one.
             </p>
-            <button className="btn btn-primary" onClick={() => navigate('connect')}>Create or Join a Community</button>
+            <Link className="btn btn-primary" to="/connect">Create or Join a Community</Link>
           </div>
         </div>
         <BottomNav active="community" navigate={navigate} />
@@ -39,9 +40,9 @@ export function CommunityPage({ navigate }) {
       </div>
 
       <div className="page-content">
-        <button className="btn btn-secondary" style={{ width: '100%', marginBottom: 12 }} onClick={() => navigate('connect')}>
+        <Link className="btn btn-secondary" style={{ width: '100%', marginBottom: 12 }} to="/connect">
           Create or Join Another Community
-        </button>
+        </Link>
 
         {communities.length > 1 && (
           <div className="card" style={{ padding: '16px 20px' }}>

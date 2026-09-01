@@ -29,6 +29,7 @@ export function FixtureDetailPage({ params, navigate }) {
   const handleManageTeams = () => navigate('manage-teams', { fixtureId: fixture.id });
 
   const teamAssigned = fixture.teams.A.length > 0 || fixture.teams.B.length > 0;
+  const canViewTeams = isRsvped && teamAssigned;
 
   return (
     <>
@@ -100,11 +101,11 @@ export function FixtureDetailPage({ params, navigate }) {
             <div style={{ marginTop: 14 }}>
               {!currentUser.isAdmin && (
                 <button
-                  className={`btn ${isRsvped ? 'btn-secondary' : 'btn-primary'}`}
+                  className="btn btn-primary"
                   onClick={() => toggleRsvp(fixture.id)}
                   style={{ maxWidth: '100%' }}
                 >
-                  {isRsvped ? '✓ Joined — Tap to leave' : 'Join Match'}
+                  {isRsvped ? 'Joined · Tap to leave' : 'Join Match'}
                 </button>
               )}
             </div>
@@ -124,6 +125,28 @@ export function FixtureDetailPage({ params, navigate }) {
             </button>
           )}
         </div>
+
+        {canViewTeams && (
+          <div className="card" style={{ padding: '16px 20px' }}>
+            <h4 style={{ marginBottom: 12 }}>Teams</h4>
+            {['A', 'B'].map((team) => (
+              <div key={team} style={{ marginBottom: team === 'A' ? 14 : 0 }}>
+                <div style={{ fontSize: 12, fontWeight: 700, color: team === 'A' ? 'var(--blue)' : '#ef4444', marginBottom: 6 }}>
+                  TEAM {team}
+                </div>
+                {fixture.teams[team].length ? fixture.teams[team].map((id) => {
+                  const player = getPlayer(id);
+                  return player ? (
+                    <div key={id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '5px 0' }}>
+                      <div className="avatar" style={{ width: 28, height: 28, fontSize: 11 }}>{player.initials}</div>
+                      <span style={{ fontSize: 14 }}>{player.name}</span>
+                    </div>
+                  ) : null;
+                }) : <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>No players assigned yet.</span>}
+              </div>
+            ))}
+          </div>
+        )}
 
         {/* Activity */}
         {fixture.rsvpIds.length > 0 && (

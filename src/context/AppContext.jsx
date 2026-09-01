@@ -55,7 +55,7 @@ export function AppProvider({ children }) {
   }, [loadCommunities]);
 
   const signup = useCallback(async (data) => {
-    try { await setSignedInUser(await apiRequest('/auth/signup', { method: 'POST', body: JSON.stringify(data) })); return { ok: true }; }
+    try { await setSignedInUser(await apiRequest('/auth/signup', { method: 'POST', body: JSON.stringify(data) })); return { ok: true, isNewUser: true }; }
     catch (error) { return { ok: false, message: error.message }; }
   }, [setSignedInUser]);
   const login = useCallback(async (data) => {

@@ -1,10 +1,13 @@
 import { Bell, ChevronDown, Plus } from 'lucide-react';
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { BottomNav, FixtureTile } from '../components/shared';
 
 
 export function HomePage({ navigate }) {
-  const { fixtures, currentUser, community, getStatus } = useApp();
+  const { fixtures, currentUser, community, communities, selectCommunity, getStatus } = useApp();
+  const [showCommunities, setShowCommunities] = useState(false);
 
   const upcoming = fixtures.filter(f => getStatus(f) === 'upcoming')
     .sort((a, b) => new Date(a.dateTime) - new Date(b.dateTime));
@@ -40,22 +43,42 @@ export function HomePage({ navigate }) {
             <p style={{ color: 'var(--text-muted)', marginTop: 8, marginBottom: 18 }}>
               You can still use Footscape for pickup games as they become available.
             </p>
-            <button className="btn btn-primary" onClick={() => navigate('community')}>Create or Join a Community</button>
+            <Link className="btn btn-primary" to="/connect">Create or Join a Community</Link>
           </div>
         ) : (
           <>
         {/* Community selector */}
-        <button style={{
+        <button type="button" style={{
           display: 'flex', alignItems: 'center', gap: 8,
           padding: '10px 14px', background: 'var(--surface)',
           border: '1px solid var(--border)', borderRadius: 'var(--radius-md)',
           cursor: 'pointer', width: '100%',
-        }} onClick={() => navigate('community')}>
+        }} onClick={() => setShowCommunities((isOpen) => !isOpen)}>
           <span style={{ flex: 1, textAlign: 'left', fontSize: 14, fontWeight: 600 }}>
             {community.name}
           </span>
-          <ChevronDown size={16} color="var(--text-secondary)" />
+          <ChevronDown size={16} color="var(--text-secondary)" style={{ transform: showCommunities ? 'rotate(180deg)' : 'none' }} />
         </button>
+        {showCommunities && (
+          <div className="card" style={{ marginTop: 8, padding: '8px 14px' }}>
+            {communities.map((item) => (
+              <button key={item.id} type="button" onClick={async () => {
+                await selectCommunity(item.id);
+                setShowCommunities(false);
+              }} style={{
+                display: 'block', width: '100%', padding: '11px 2px', border: 'none',
+                background: 'none', textAlign: 'left', cursor: 'pointer',
+                fontWeight: item.id === community.id ? 700 : 500,
+                color: item.id === community.id ? 'var(--green)' : 'var(--text-primary)',
+              }}>
+                {item.name}{item.id === community.id ? ' · Active' : ''}
+              </button>
+            ))}
+            <Link to="/connect" style={{ display: 'block', padding: '11px 2px', color: 'var(--green)', fontWeight: 700 }}>
+              + Create or Join Another Community
+            </Link>
+          </div>
+        )}
 
         {/* Admin: Create Fixture CTA */}
         {currentUser.isAdmin && (
