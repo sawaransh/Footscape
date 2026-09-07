@@ -22,6 +22,31 @@ async function createAndSendOtp({ purpose, email, user, pendingUser }) {
   return otp;
 }
 
+// Direct auth remains available while email verification is being configured.
+// The OTP routes below can be enabled in the client later without changing accounts.
+router.post("/signup", async (req, res, next) => {
+  try {
+    const name = req.body.name?.trim();
+    const email = req.body.email?.trim().toLowerCase();
+    const password = req.body.password;
+    const username = `@${email?.split("@")[0] || ""}`;
+    if (!name || !email?.includes("@") || !password || password.length < 6) return res.status(400).json({ message: "Provide a name, valid email, and password of at least 6 characters" });
+    if (await User.exists({ $or: [{ email }, { username }] })) return res.status(409).json({ message: "An account already exists with this email" });
+    const user = await User.create({ name, email, username, passwordHash: await bcrypt.hash(password, 12) });
+    return res.status(201).json({ user: toPublicUser(user), token: createToken(user), isNewUser: true });
+  } catch (error) { return next(error); }
+});
+
+router.post("/login", async (req, res, next) => {
+  try {
+    const identifier = req.body.email?.trim().toLowerCase();
+    const password = req.body.password;
+    const user = await User.findOne({ $or: [{ email: identifier }, { username: identifier }] }).select("+passwordHash");
+    if (!user || !password || !(await bcrypt.compare(password, user.passwordHash))) return res.status(401).json({ message: "Email or password is incorrect" });
+    return res.json({ user: toPublicUser(user), token: createToken(user), isNewUser: false });
+  } catch (error) { return next(error); }
+});
+
 router.post("/signup/request", async (req, res, next) => {
   try {
     const name = req.body.name?.trim();

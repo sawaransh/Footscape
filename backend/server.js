@@ -18,7 +18,14 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 8000;
 const httpServer = createServer(app);
-const io = new Server(httpServer, { cors: { origin: process.env.CLIENT_URL || "http://localhost:5173" } });
+const allowedOrigins = (process.env.CLIENT_URL || "").split(",").map((origin) => origin.trim()).filter(Boolean);
+const isAllowedOrigin = (origin) => !origin || /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin) || allowedOrigins.includes(origin);
+const corsOptions = {
+  origin(origin, callback) {
+    callback(isAllowedOrigin(origin) ? null : new Error("This website is not allowed to access the Footscape API"), isAllowedOrigin(origin));
+  },
+};
+const io = new Server(httpServer, { cors: corsOptions });
 app.set("io", io);
 
 io.use((socket, next) => {
@@ -36,7 +43,7 @@ io.on("connection", (socket) => {
 });
 
 app.use(express.json());
-app.use(cors({ origin: process.env.CLIENT_URL || "http://localhost:5173" }));
+app.use(cors(corsOptions));
 
 app.get("/", (req,res) => {
  

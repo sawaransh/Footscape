@@ -78,6 +78,20 @@ export function AppProvider({ children }) {
     try { return { ok: true, ...(await apiRequest('/auth/login/request', { method: 'POST', body: JSON.stringify(data) })) }; }
     catch (error) { return { ok: false, message: error.message }; }
   }, []);
+  const signup = useCallback(async (data) => {
+    try {
+      const result = await apiRequest('/auth/signup', { method: 'POST', body: JSON.stringify(data) });
+      await setSignedInUser(result);
+      return { ok: true, isNewUser: true };
+    } catch (error) { return { ok: false, message: error.message }; }
+  }, [setSignedInUser]);
+  const login = useCallback(async (data) => {
+    try {
+      const result = await apiRequest('/auth/login', { method: 'POST', body: JSON.stringify(data) });
+      await setSignedInUser(result);
+      return { ok: true, isNewUser: false };
+    } catch (error) { return { ok: false, message: error.message }; }
+  }, [setSignedInUser]);
   const verifyOtp = useCallback(async (verificationId, code) => {
     try {
       const result = await apiRequest('/auth/verify-otp', { method: 'POST', body: JSON.stringify({ verificationId, code }) });
@@ -166,6 +180,6 @@ export function AppProvider({ children }) {
   }, []);
   const loadPlayerProfile = useCallback(async (playerId) => apiRequest(`/users/${playerId}/profile`), []);
 
-  return <AppContext.Provider value={{ fixtures, players, community, communities, currentUser, authLoading, notifications, requestSignupOtp, requestLoginOtp, verifyOtp, logout, createCommunity, joinCommunity, selectCommunity, getStatus, getElapsed, getScore, createFixture, toggleRsvp, assignTeam, updateStat, setTimerPaused, addMatchEvent, endMatch, markNotificationRead, markAllNotificationsRead, loadPlayerProfile, getPlayer, getFixture }}>{children}</AppContext.Provider>;
+  return <AppContext.Provider value={{ fixtures, players, community, communities, currentUser, authLoading, notifications, signup, login, requestSignupOtp, requestLoginOtp, verifyOtp, logout, createCommunity, joinCommunity, selectCommunity, getStatus, getElapsed, getScore, createFixture, toggleRsvp, assignTeam, updateStat, setTimerPaused, addMatchEvent, endMatch, markNotificationRead, markAllNotificationsRead, loadPlayerProfile, getPlayer, getFixture }}>{children}</AppContext.Provider>;
 }
 export const useApp = () => useContext(AppContext);

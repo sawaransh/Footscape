@@ -4,7 +4,7 @@ import { ArrowLeft, Eye, EyeOff, KeyRound, LogIn, MailCheck, UserPlus } from 'lu
 import { useApp } from '../context/AppContext';
 
 export function AuthPage() {
-  const { requestLoginOtp, requestSignupOtp, verifyOtp } = useApp();
+  const { login, signup, requestLoginOtp, requestSignupOtp, verifyOtp } = useApp();
   const navigate = useNavigate();
   const [mode, setMode] = useState('signup');
   const [form, setForm] = useState({ name: '', email: '', password: '' });
@@ -23,6 +23,13 @@ export function AuthPage() {
     if (!result.ok) { setError(result.message); return; }
     setVerification({ id: result.verificationId, email: result.email, mode }); setCode('');
   };
+  const submitDirectAuth = async (event) => {
+    event.preventDefault(); setIsSubmitting(true); setError('');
+    const result = isLogin ? await login({ email: form.email, password: form.password }) : await signup(form);
+    setIsSubmitting(false);
+    if (!result.ok) { setError(result.message); return; }
+    if (result.isNewUser) navigate('/connect');
+  };
   const confirmCode = async (event) => {
     event.preventDefault(); setIsSubmitting(true); setError('');
     const result = await verifyOtp(verification.id, code);
@@ -34,7 +41,7 @@ export function AuthPage() {
 
   return <div className="auth-screen"><div className="auth-bg" /><div className="auth-content">
     <div className="auth-brand"><img className="auth-brand-logo" src="/brand/footscape-title.png" alt="Footscape" /></div>
-    {!verification ? <form onSubmit={requestCode} className="auth-panel">
+    {!verification ? <form onSubmit={submitDirectAuth} className="auth-panel">
       <div className={`auth-tabs ${isLogin ? 'is-login' : 'is-signup'}`}><span className="auth-tab-indicator" aria-hidden="true" />
         <button type="button" className={isLogin ? 'active' : ''} onClick={() => changeMode('login')}>Login</button>
         <button type="button" className={!isLogin ? 'active' : ''} onClick={() => changeMode('signup')}>Signup</button>
@@ -44,7 +51,7 @@ export function AuthPage() {
         <div className="input-group"><label>Email or username</label><input className="input-field" value={form.email} onChange={set('email')} placeholder={isLogin ? 'cristiano@realmadrid.com' : 'messi@barcelona.com'} autoComplete="email" /></div>
         <div className="input-group"><label>Password</label><div className="password-control"><input className="input-field" type={showPassword ? 'text' : 'password'} value={form.password} onChange={set('password')} placeholder={isLogin ? 'Enter a Password' : 'At least 6 characters'} autoComplete={isLogin ? 'current-password' : 'new-password'} /><button className="password-toggle" type="button" onClick={() => setShowPassword((visible) => !visible)} aria-label={showPassword ? 'Hide password' : 'Show password'}>{showPassword ? <EyeOff size={18} /> : <Eye size={18} />}</button></div></div>
         {error && <p className="form-error" role="alert">{error}</p>}
-        <button className="btn btn-primary" type="submit" disabled={isSubmitting}>{isLogin ? <LogIn size={17} /> : <UserPlus size={17} />}{isSubmitting ? 'Sending code…' : isLogin ? 'Continue with email code' : 'Create account with email code'}</button>
+        <button className="btn btn-primary" type="submit" disabled={isSubmitting}>{isLogin ? <LogIn size={17} /> : <UserPlus size={17} />}{isSubmitting ? 'Please wait…' : isLogin ? 'Login' : 'Create Account'}</button>
       </div>
     </form> : <form className="auth-panel otp-panel" onSubmit={confirmCode}>
       <button className="otp-back" type="button" onClick={() => { setVerification(null); setError(''); }}><ArrowLeft size={16} /> Back</button>
