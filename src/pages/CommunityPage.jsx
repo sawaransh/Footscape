@@ -1,4 +1,4 @@
-import { ArrowLeft, MoreHorizontal, UserPlus } from 'lucide-react';
+import { ArrowLeft, MoreHorizontal, UserPlus, Goal, Building2, Plus } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { BottomNav } from '../components/shared';
@@ -16,7 +16,7 @@ export function CommunityPage({ navigate }) {
         </div>
         <div className="page-content" style={{ paddingTop: 36 }}>
           <div className="card" style={{ padding: 28, textAlign: 'center' }}>
-            <div style={{ fontSize: 40, marginBottom: 12 }}>🏟️</div>
+            <div className="empty-state-icon" style={{ marginBottom: 12 }}><Building2 size={38} /></div>
             <h3>You haven’t joined any communities yet</h3>
             <p style={{ color: 'var(--text-muted)', marginTop: 8, marginBottom: 20 }}>
               Create a community for your group or use an invite code to join one.
@@ -40,8 +40,8 @@ export function CommunityPage({ navigate }) {
       </div>
 
       <div className="page-content">
-        <Link className="btn btn-secondary" style={{ width: '100%', marginBottom: 12 }} to="/connect">
-          Create or Join Another Community
+        <Link className="btn community-action-button" to="/connect">
+          <Plus size={17} /> Create or Join Another Community
         </Link>
 
         {communities.length > 1 && (
@@ -66,7 +66,7 @@ export function CommunityPage({ navigate }) {
             background: 'var(--green-light)', display: 'flex',
             alignItems: 'center', justifyContent: 'center', fontSize: 24,
             flexShrink: 0,
-          }}>⚽</div>
+          }}><Goal size={26} /></div>
           <div>
             <h3 style={{ marginBottom: 2 }}>{community.name}</h3>
             <span className="badge badge-upcoming">Admin</span>
@@ -100,7 +100,7 @@ export function CommunityPage({ navigate }) {
         <div className="card" style={{ padding: '16px 20px' }}>
           <h4 style={{ marginBottom: 14 }}>Members ({players.length})</h4>
           {players.map((p, i) => (
-            <div key={p.id} style={{
+            <button key={p.id} className="community-member-row" onClick={() => navigate('player-profile', { playerId: p.id })} style={{
               display: 'flex', alignItems: 'center', gap: 12,
               padding: '10px 0',
               borderBottom: i < players.length - 1 ? '1px solid var(--border-light)' : 'none',
@@ -111,11 +111,9 @@ export function CommunityPage({ navigate }) {
                 <span className="badge badge-upcoming" style={{ fontSize: 10 }}>Admin</span>
               )}
               {currentUser.isAdmin && !p.isAdmin && (
-                <button style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
-                  <MoreHorizontal size={16} color="var(--text-muted)" />
-                </button>
+                <MoreHorizontal size={16} color="var(--text-muted)" />
               )}
-            </div>
+            </button>
           ))}
         </div>
 

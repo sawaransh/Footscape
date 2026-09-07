@@ -1,4 +1,4 @@
-import { ArrowLeft, Share } from 'lucide-react';
+import { ArrowLeft, Share, Shield, CalendarDays, MapPin } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { StatusBadge } from '../components/shared';
 
@@ -38,23 +38,23 @@ export function MatchSummaryPage({ params, navigate }) {
             alignItems: 'center', gap: 16, marginTop: 20, marginBottom: 20,
           }}>
             <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: 40, marginBottom: 8 }}>🟢</div>
+              <div className="team-mark team-mark-a"><Shield size={31} /></div>
               <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>Team A</div>
               <div style={{ fontSize: 48, fontWeight: 900, lineHeight: 1 }}>{score.a}</div>
             </div>
             <div style={{ fontSize: 18, color: 'var(--text-muted)' }}>–</div>
             <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: 40, marginBottom: 8 }}>🔵</div>
+              <div className="team-mark team-mark-b"><Shield size={31} /></div>
               <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>Team B</div>
               <div style={{ fontSize: 48, fontWeight: 900, lineHeight: 1 }}>{score.b}</div>
             </div>
           </div>
 
           <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
-            {dateStr} · {timeStr}
+            <CalendarDays className="meta-icon" size={14} /> {dateStr} · {timeStr}
           </p>
           {fixture.venue && (
-            <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>📍 {fixture.venue}</p>
+            <p className="meta-line" style={{ fontSize: 13, color: 'var(--text-secondary)' }}><MapPin className="meta-icon" size={14} /> {fixture.venue}</p>
           )}
         </div>
 

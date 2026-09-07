@@ -16,15 +16,19 @@ export function CreateFixturePage({ navigate }) {
     duration: '90',
   });
   const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const set = (key) => (e) => setForm(prev => ({ ...prev, [key]: e.target.value }));
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!form.title.trim()) { setError('Match name is required'); return; }
     if (!form.date) { setError('Date is required'); return; }
     if (!form.time) { setError('Start time is required'); return; }
     setError('');
-    const id = createFixture(form);
+    setIsSubmitting(true);
+    const id = await createFixture(form);
+    setIsSubmitting(false);
+    if (!id) { setError('Could not create this fixture. Please try again.'); return; }
     navigate('fixture', { fixtureId: id });
   };
 
@@ -38,8 +42,8 @@ export function CreateFixturePage({ navigate }) {
         <div style={{ width: 60 }} />
       </div>
 
-      <div className="page-content">
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <div className="page-content create-fixture-content">
+        <div className="form-surface" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           {/* Match name */}
           <div className="input-group">
             <label>Match Name</label>
@@ -114,9 +118,9 @@ export function CreateFixturePage({ navigate }) {
             <p style={{ color: 'var(--red)', fontSize: 13, fontWeight: 500 }}>{error}</p>
           )}
 
-          <button className="btn btn-primary" onClick={handleSubmit}
+          <button className="btn btn-primary form-submit-button" onClick={handleSubmit} disabled={isSubmitting}
             style={{ marginTop: 4, padding: '16px' }}>
-            Create Fixture
+            {isSubmitting ? 'Creating Fixture…' : 'Create Fixture'}
           </button>
         </div>
         <div style={{ height: 16 }} />

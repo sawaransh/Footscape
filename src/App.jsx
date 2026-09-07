@@ -19,6 +19,7 @@ const routeFor = (name, params = {}) => {
     home: '/home',
     community: '/community',
     profile: '/profile',
+    'player-profile': `/players/${params.playerId}`,
     'create-fixture': '/fixtures/new',
     fixture: `/fixtures/${params.fixtureId}`,
     'manage-teams': `/fixtures/${params.fixtureId}/teams`,
@@ -40,7 +41,8 @@ function useScreenNavigate() {
 
 function Page({ Component }) {
   const navigate = useScreenNavigate();
-  return <Component navigate={navigate} />;
+  const params = useParams();
+  return <Component navigate={navigate} params={params} />;
 }
 
 function FixturePage({ Component }) {
@@ -72,6 +74,7 @@ function AppRoutes() {
         <Route path="/home" element={<Page Component={HomePage} />} />
         <Route path="/community" element={<Page Component={CommunityPage} />} />
         <Route path="/profile" element={<Page Component={ProfilePage} />} />
+        <Route path="/players/:playerId" element={<Page Component={ProfilePage} />} />
         <Route path="/connect" element={<Page Component={CreateJoinCommunity} />} />
         <Route path="/fixtures/new" element={<Page Component={CreateFixturePage} />} />
         <Route path="/fixtures/:fixtureId" element={<FixturePage Component={FixtureDetailPage} />} />

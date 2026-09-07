@@ -1,4 +1,4 @@
-import { ArrowLeft, MoreHorizontal, Share2 } from 'lucide-react';
+import { ArrowLeft, MoreHorizontal, Share2, CalendarDays, MapPin, BarChart3 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { AvatarStack, StatusBadge } from '../components/shared';
 
@@ -49,11 +49,11 @@ export function FixtureDetailPage({ params, navigate }) {
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             <span style={{ fontSize: 14, color: 'var(--text-secondary)' }}>
-              📅 {dateStr} · {timeStr}
+              <CalendarDays className="meta-icon" size={15} /> {dateStr} · {timeStr}
             </span>
             {fixture.venue && (
               <span style={{ fontSize: 14, color: 'var(--text-secondary)' }}>
-                📍 {fixture.venue}
+                <MapPin className="meta-icon" size={15} /> {fixture.venue}
               </span>
             )}
             {fixture.description && (
@@ -180,7 +180,7 @@ export function FixtureDetailPage({ params, navigate }) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {status === 'live' && currentUser.isAdmin && (
             <button className="btn btn-primary" onClick={handleLiveMatch}>
-              📊 Manage Live Match
+              <BarChart3 size={17} /> Manage Live Match
             </button>
           )}
           {status === 'past' && (

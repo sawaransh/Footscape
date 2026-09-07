@@ -8,7 +8,10 @@ const connectDatabase = require("./config/database");
 const authRoutes = require("./routes/authRoutes");
 const communityRoutes = require("./routes/communityRoutes");
 const fixtureRoutes = require("./routes/fixtureRoutes");
+const notificationRoutes = require("./routes/notificationRoutes");
+const userRoutes = require("./routes/userRoutes");
 const Membership = require("./models/Membership");
+const { sendFixtureReminders } = require("./utils/notifications");
 
 dotenv.config();
 
@@ -26,6 +29,7 @@ io.use((socket, next) => {
 });
 
 io.on("connection", (socket) => {
+  socket.join(`user:${socket.userId}`);
   socket.on("community:join", async (communityId) => {
     if (await Membership.exists({ user: socket.userId, community: communityId })) socket.join(`community:${communityId}`);
   });
@@ -46,6 +50,8 @@ app.get("/api/health", (req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/communities", communityRoutes);
 app.use("/api/fixtures", fixtureRoutes);
+app.use("/api/notifications", notificationRoutes);
+app.use("/api/users", userRoutes);
 
 app.use((error, req, res, next) => {
   if (res.headersSent) return next(error);
@@ -55,6 +61,8 @@ app.use((error, req, res, next) => {
 
 connectDatabase().then(() => httpServer.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
+    sendFixtureReminders(io).catch((error) => console.error("Could not send fixture reminders:", error.message));
+    setInterval(() => sendFixtureReminders(io).catch((error) => console.error("Could not send fixture reminders:", error.message)), 60 * 1000);
 })).catch((error) => {
   console.error("Unable to start server:", error.message);
   process.exit(1);

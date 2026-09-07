@@ -1,4 +1,4 @@
-import { Home, Calendar, User } from 'lucide-react';
+import { Home, Calendar, User, CalendarDays, MapPin, ChevronRight, Circle } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
 // ── Bottom Navigation ──────────────────────────────────────────
@@ -55,13 +55,13 @@ export function AvatarStack({ playerIds, max = 5 }) {
 // ── Status Badge ───────────────────────────────────────────────
 export function StatusBadge({ status }) {
   const map = {
-    live:      { cls: 'badge-live',     label: '● LIVE' },
+    live:      { cls: 'badge-live',     label: 'LIVE', icon: Circle },
     upcoming:  { cls: 'badge-upcoming', label: 'Upcoming' },
     past:      { cls: 'badge-past',     label: 'Past' },
     completed: { cls: 'badge-completed',label: 'Completed' },
   };
-  const { cls, label } = map[status] || map.past;
-  return <span className={`badge ${cls}`}>{label}</span>;
+  const { cls, label, icon: Icon } = map[status] || map.past;
+  return <span className={`badge ${cls}`}>{Icon && <Icon className="status-icon" size={8} fill="currentColor" />} {label}</span>;
 }
 
 // ── Fixture Tile ───────────────────────────────────────────────
@@ -78,9 +78,7 @@ export function FixtureTile({ fixture, onPress }) {
     <div
       className="card fixture-tile"
       onClick={() => onPress(fixture.id)}
-      style={{ padding: '16px', cursor: 'pointer', transition: 'box-shadow 0.15s' }}
-      onMouseEnter={e => e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.1)'}
-      onMouseLeave={e => e.currentTarget.style.boxShadow = ''}
+      style={{ padding: '16px', cursor: 'pointer' }}
     >
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 10 }}>
         <div style={{ flex: 1 }}>
@@ -88,11 +86,11 @@ export function FixtureTile({ fixture, onPress }) {
           <h4 style={{ marginTop: 6, marginBottom: 4 }}>{fixture.title}</h4>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
             <span style={{ fontSize: 13, color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: 5 }}>
-              📅 {dateStr} · {timeStr}
+              <CalendarDays className="meta-icon" size={14} /> {dateStr} · {timeStr}
             </span>
             {fixture.venue && (
               <span style={{ fontSize: 13, color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: 5 }}>
-                📍 {fixture.venue}
+                <MapPin className="meta-icon" size={14} /> {fixture.venue}
               </span>
             )}
           </div>
@@ -116,7 +114,7 @@ export function FixtureTile({ fixture, onPress }) {
             </span>
           )}
         </div>
-        <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>›</span>
+        <ChevronRight className="chevron-icon" size={17} />
       </div>
     </div>
   );

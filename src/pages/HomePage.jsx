@@ -1,4 +1,4 @@
-import { Bell, ChevronDown, Plus } from 'lucide-react';
+import { Bell, BellRing, CheckCheck, ChevronDown, Plus, Goal, Radio } from 'lucide-react';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
@@ -6,8 +6,10 @@ import { BottomNav, FixtureTile } from '../components/shared';
 
 
 export function HomePage({ navigate }) {
-  const { fixtures, currentUser, community, communities, selectCommunity, getStatus } = useApp();
+  const { fixtures, currentUser, community, communities, selectCommunity, getStatus, notifications, markNotificationRead, markAllNotificationsRead } = useApp();
   const [showCommunities, setShowCommunities] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const unreadCount = notifications.filter((notification) => !notification.read).length;
 
   const upcoming = fixtures.filter(f => getStatus(f) === 'upcoming')
     .sort((a, b) => new Date(a.dateTime) - new Date(b.dateTime));
@@ -18,27 +20,50 @@ export function HomePage({ navigate }) {
     .sort((a, b) => new Date(b.dateTime) - new Date(a.dateTime));
 
   const handleFixture = (id) => navigate('fixture', { fixtureId: id });
+  const openNotification = async (notification) => {
+    if (!notification.read) await markNotificationRead(notification.id);
+    setShowNotifications(false);
+    if (notification.communityId && notification.communityId !== community?.id) await selectCommunity(notification.communityId);
+    if (notification.fixtureId) navigate('fixture', { fixtureId: notification.fixtureId });
+  };
 
   return (
     
     <>
       {/* Header */}
-      <div style={{
+      <div className="home-header" style={{
         padding: '16px 20px 12px',
         background: 'var(--surface)',
         borderBottom: '1px solid var(--border-light)',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       }}>
-        <h2 style={{ fontSize: 22, fontWeight: 800 }}>Home</h2>
-        <button className="btn-ghost" style={{ padding: 6 }}>
-          <Bell size={20} color="var(--text-secondary)" />
+        <img
+          className="home-brand-logo"
+          src="/brand/footscape-title.png"
+          alt="Footscape"
+        />
+        <button className="btn-ghost notification-trigger" style={{ padding: 6 }} onClick={() => setShowNotifications((open) => !open)} aria-label="View notifications" aria-expanded={showNotifications}>
+          {unreadCount > 0 ? <BellRing size={20} /> : <Bell size={20} />}
+          {unreadCount > 0 && <span className="notification-count">{unreadCount > 9 ? '9+' : unreadCount}</span>}
         </button>
       </div>
 
-      <div className="page-content" style={{ paddingTop: 12 }}>
+      {showNotifications && (
+        <div className="notification-panel">
+          <div className="notification-panel-header"><div><strong>Notifications</strong><small>{unreadCount ? `${unreadCount} unread` : 'You’re all caught up'}</small></div>{unreadCount > 0 && <button onClick={() => markAllNotificationsRead()}><CheckCheck size={16} /> Mark all read</button>}</div>
+          {notifications.length === 0 ? <p className="notification-empty">New fixtures and match reminders will appear here.</p> : <div className="notification-list">
+            {notifications.map((notification) => <button className={`notification-item ${notification.read ? '' : 'is-unread'}`} key={notification.id} onClick={() => openNotification(notification)}>
+              <span className="notification-dot" aria-hidden="true" />
+              <span><strong>{notification.title}</strong><small>{notification.message}</small></span>
+            </button>)}
+          </div>}
+        </div>
+      )}
+
+      <div className="page-content home-content" style={{ paddingTop: 12 }}>
         {!community ? (
           <div className="card" style={{ padding: 28, textAlign: 'center' }}>
-            <div style={{ fontSize: 38, marginBottom: 10 }}>⚽</div>
+            <div className="empty-state-icon"><Goal size={38} /></div>
             <h3>You haven’t joined any communities yet</h3>
             <p style={{ color: 'var(--text-muted)', marginTop: 8, marginBottom: 18 }}>
               You can still use Footscape for pickup games as they become available.
@@ -47,8 +72,13 @@ export function HomePage({ navigate }) {
           </div>
         ) : (
           <>
+        <div className="home-welcome">
+          <span className="eyebrow">PLAY · TRACK · BELONG</span>
+          <h3>Good players.<br /><em>Better company.</em></h3>
+          <span className="home-welcome-mark"><Goal size={40} /></span>
+        </div>
         {/* Community selector */}
-        <button type="button" style={{
+        <button className="community-switcher" type="button" style={{
           display: 'flex', alignItems: 'center', gap: 8,
           padding: '10px 14px', background: 'var(--surface)',
           border: '1px solid var(--border)', borderRadius: 'var(--radius-md)',
@@ -60,22 +90,17 @@ export function HomePage({ navigate }) {
           <ChevronDown size={16} color="var(--text-secondary)" style={{ transform: showCommunities ? 'rotate(180deg)' : 'none' }} />
         </button>
         {showCommunities && (
-          <div className="card" style={{ marginTop: 8, padding: '8px 14px' }}>
+          <div className="card community-menu" style={{ marginTop: 8, padding: '8px 14px' }}>
             {communities.map((item) => (
-              <button key={item.id} type="button" onClick={async () => {
+              <button className={`community-menu-item ${item.id === community.id ? 'is-active' : ''}`} key={item.id} type="button" onClick={async () => {
                 await selectCommunity(item.id);
                 setShowCommunities(false);
-              }} style={{
-                display: 'block', width: '100%', padding: '11px 2px', border: 'none',
-                background: 'none', textAlign: 'left', cursor: 'pointer',
-                fontWeight: item.id === community.id ? 700 : 500,
-                color: item.id === community.id ? 'var(--green)' : 'var(--text-primary)',
               }}>
                 {item.name}{item.id === community.id ? ' · Active' : ''}
               </button>
             ))}
-            <Link to="/connect" style={{ display: 'block', padding: '11px 2px', color: 'var(--green)', fontWeight: 700 }}>
-              + Create or Join Another Community
+            <Link className="community-menu-add" to="/connect">
+              <Plus size={15} /> Create or Join Another Community
             </Link>
           </div>
         )}
@@ -115,7 +140,7 @@ export function HomePage({ navigate }) {
         {/* Live matches */}
         {live.length > 0 && (
           <div>
-            <div className="section-label" style={{ marginBottom: 8 }}>🔴 Live now</div>
+            <div className="section-label live-section-label" style={{ marginBottom: 8 }}><Radio size={13} /> Live now</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {live.map(f => (
                 <FixtureTile key={f.id} fixture={f} onPress={handleFixture} />

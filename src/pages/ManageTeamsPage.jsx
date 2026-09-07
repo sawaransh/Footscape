@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Check, Info } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
 export function ManageTeamsPage({ params, navigate }) {
@@ -101,7 +101,7 @@ export function ManageTeamsPage({ params, navigate }) {
             color: 'var(--green)', fontWeight: 700, fontSize: 15,
           }}
         >
-          {saved ? '✓ Saved' : 'Save'}
+          {saved ? <><Check size={15} /> Saved</> : 'Save'}
         </button>
       </div>
 
@@ -161,7 +161,7 @@ export function ManageTeamsPage({ params, navigate }) {
             padding: '12px', background: 'var(--surface-2)',
             borderRadius: 'var(--radius-sm)',
           }}>
-            <span style={{ fontSize: 16 }}>ℹ️</span>
+            <Info className="info-icon" size={17} />
             <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
               Tap A or B next to each player to assign them. Tap again to unassign.
             </p>
@@ -170,7 +170,7 @@ export function ManageTeamsPage({ params, navigate }) {
 
         {/* Save button */}
         <button className="btn btn-primary" onClick={handleSave}>
-          {saved ? '✓ Teams Saved!' : 'Save Teams'}
+          {saved ? <><Check size={17} /> Teams Saved!</> : 'Save Teams'}
         </button>
 
         <div style={{ height: 16 }} />

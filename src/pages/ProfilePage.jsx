@@ -1,119 +1,77 @@
-import { LogOut } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { ArrowLeft, LogOut } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { BottomNav } from '../components/shared';
 
-export function ProfilePage({ navigate }) {
-  const { currentUser, fixtures, getStatus, getScore, logout } = useApp();
+export function ProfilePage({ navigate, params = {} }) {
+  const { currentUser, fixtures: currentFixtures, getPlayer, getStatus, getScore, logout, loadPlayerProfile } = useApp();
+  const playerId = params.playerId || currentUser.id;
+  const isOwnProfile = playerId === currentUser.id;
+  const [profile, setProfile] = useState(null);
+  const [error, setError] = useState('');
+  const localProfile = useMemo(() => {
+    const player = isOwnProfile ? currentUser : getPlayer(playerId);
+    if (!player) return null;
+    const fixtures = currentFixtures.filter((fixture) => getStatus(fixture) === 'past' && fixture.rsvpIds.includes(playerId));
+    return {
+      player,
+      fixtures,
+      stats: fixtures.reduce((totals, fixture) => ({
+        matches: totals.matches + 1,
+        goals: totals.goals + (fixture.stats[playerId]?.goals || 0),
+        assists: totals.assists + (fixture.stats[playerId]?.assists || 0),
+      }), { matches: 0, goals: 0, assists: 0 }),
+    };
+  }, [currentFixtures, currentUser, getPlayer, getStatus, isOwnProfile, playerId]);
 
-  const myMatches = fixtures.filter(f =>
-    getStatus(f) === 'past' && f.rsvpIds.includes(currentUser.id)
-  );
+  useEffect(() => {
+    let active = true;
+    loadPlayerProfile(playerId).then((data) => {
+      if (active) { setError(''); setProfile(data); }
+    }).catch((requestError) => { if (active) setError(requestError.message); });
+    return () => { active = false; };
+  }, [loadPlayerProfile, playerId]);
 
-  const totalGoals = myMatches.reduce((sum, f) => sum + (f.stats[currentUser.id]?.goals || 0), 0);
-  const totalAssists = myMatches.reduce((sum, f) => sum + (f.stats[currentUser.id]?.assists || 0), 0);
+  if (error && !localProfile) return <><div className="page-header"><button className="back-btn" onClick={() => navigate('community')}><ArrowLeft size={18} /> Back</button><h2>Profile</h2><span style={{ width: 48 }} /></div><div className="page-content"><p className="form-error">{error}</p></div><BottomNav active={isOwnProfile ? 'profile' : ''} navigate={navigate} /></>;
+  if ((!profile || profile.player.id !== playerId) && !localProfile) return <div className="page-content" style={{ paddingTop: 40, textAlign: 'center', color: 'var(--text-secondary)' }}>Loading profile…</div>;
 
+  const { player, stats, fixtures } = profile?.player.id === playerId ? profile : localProfile;
   return (
     <>
       <div className="page-header" style={{ border: 'none' }}>
-        <h2 style={{ fontSize: 18 }}>Profile</h2>
-        <button className="btn-ghost" onClick={logout}>
-          <LogOut size={20} color="var(--text-secondary)" />
-        </button>
+        {isOwnProfile ? <span style={{ width: 34 }} /> : <button className="back-btn" onClick={() => navigate('community')}><ArrowLeft size={18} /></button>}
+        <h2 style={{ fontSize: 16 }}>Profile - {player.name}</h2>
+        {isOwnProfile ? <button className="btn-ghost" onClick={logout} aria-label="Log out"><LogOut size={20} color="var(--text-secondary)" /></button> : <span style={{ width: 34 }} />}
       </div>
-
-      <div className="page-content">
-        {/* Profile card */}
-        <div className="card" style={{ padding: '24px 20px', textAlign: 'center' }}>
-          <div className="avatar-xl" style={{ margin: '0 auto 12px' }}>
-            {currentUser.name.slice(0, 2).toUpperCase()}
-          </div>
-          <h3>{currentUser.name}</h3>
-          <p style={{ color: 'var(--text-secondary)', marginTop: 2 }}>
-            {currentUser.username || '@' + currentUser.name.toLowerCase()}
-          </p>
-          {currentUser.isAdmin && (
-            <span className="badge badge-upcoming" style={{ marginTop: 8 }}>Admin</span>
-          )}
+      <div className="page-content profile-content">
+        <div className="card profile-hero" style={{ padding: '24px 20px', textAlign: 'center' }}>
+          <div className="avatar-xl" style={{ margin: '0 auto 12px' }}>{player.initials}</div>
+          <h3>{player.name}</h3>
+          <p style={{ color: 'var(--text-secondary)', marginTop: 2 }}>{player.username || '@' + player.name.toLowerCase()}</p>
+          {isOwnProfile && currentUser.isAdmin && <span className="badge badge-upcoming" style={{ marginTop: 8 }}>Admin</span>}
         </div>
-
-        {/* Season stats */}
         <div>
           <div className="section-label" style={{ marginBottom: 10 }}>Season Stats</div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>
-            <div className="stat-box">
-              <div className="stat-value">{myMatches.length}</div>
-              <div className="stat-label">Matches</div>
-            </div>
-            <div className="stat-box">
-              <div className="stat-value">{totalGoals}</div>
-              <div className="stat-label">Goals</div>
-            </div>
-            <div className="stat-box">
-              <div className="stat-value">{totalAssists}</div>
-              <div className="stat-label">Assists</div>
-            </div>
+            <div className="stat-box"><div className="stat-value">{stats.matches}</div><div className="stat-label">Matches</div></div>
+            <div className="stat-box"><div className="stat-value">{stats.goals}</div><div className="stat-label">Goals</div></div>
+            <div className="stat-box"><div className="stat-value">{stats.assists}</div><div className="stat-label">Assists</div></div>
           </div>
         </div>
-
-        {/* Recent matches */}
         <div>
           <div className="section-label" style={{ marginBottom: 10 }}>Recent Matches</div>
-          {myMatches.length === 0 ? (
-            <p style={{ color: 'var(--text-muted)', fontSize: 14 }}>No past matches yet.</p>
-          ) : (
-            <div className="card" style={{ overflow: 'hidden' }}>
-              {myMatches.slice(0, 5).map((f, i) => {
-                const score = getScore(f);
-                const myGoals = f.stats[currentUser.id]?.goals || 0;
-                const myAssists = f.stats[currentUser.id]?.assists || 0;
-                const date = new Date(f.dateTime);
-                const dateStr = date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
-
-                return (
-                  <div
-                    key={f.id}
-                    onClick={() => navigate('summary', { fixtureId: f.id })}
-                    style={{
-                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                      padding: '12px 16px',
-                      borderBottom: i < myMatches.length - 1 ? '1px solid var(--border-light)' : 'none',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    <div>
-                      <p style={{ fontSize: 14, fontWeight: 600 }}>
-                        {dateStr} vs {f.title.replace('Match','').trim() || 'Team'}
-                      </p>
-                      <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 2 }}>
-                        {score.a} – {score.b} · Final
-                      </p>
-                    </div>
-                    <div style={{ textAlign: 'right' }}>
-                      {myGoals > 0 && (
-                        <span style={{ fontSize: 13, color: 'var(--green)', fontWeight: 600 }}>
-                          {myGoals} Goal{myGoals !== 1 ? 's' : ''}
-                        </span>
-                      )}
-                      {myAssists > 0 && (
-                        <span style={{ fontSize: 13, color: 'var(--text-secondary)', display: 'block' }}>
-                          {myAssists} Assist{myAssists !== 1 ? 's' : ''}
-                        </span>
-                      )}
-                      {myGoals === 0 && myAssists === 0 && (
-                        <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>0 Goals</span>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
+          {fixtures.length === 0 ? <p style={{ color: 'var(--text-muted)', fontSize: 14 }}>No past matches yet.</p> : <div className="card" style={{ overflow: 'hidden' }}>
+            {fixtures.map((fixture) => {
+              const score = getScore(fixture);
+              const goals = fixture.stats[player.id]?.goals || 0;
+              const assists = fixture.stats[player.id]?.assists || 0;
+              const date = new Date(fixture.dateTime).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+              return <button key={fixture.id} className="profile-match-row" onClick={() => navigate('summary', { fixtureId: fixture.id })}><span><strong>{date} · {fixture.title}</strong><small>{score.a} – {score.b} · Final</small></span><span className="profile-match-contribution">{goals}G · {assists}A</span></button>;
+            })}
+          </div>}
         </div>
-
-        <div style={{ height: 8 }} />
       </div>
-
-      <BottomNav active="profile" navigate={navigate} />
+      <BottomNav active={isOwnProfile ? 'profile' : ''} navigate={navigate} />
     </>
   );
 }

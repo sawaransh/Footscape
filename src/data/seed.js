@@ -17,18 +17,7 @@ export const COMMUNITY = {
 };
 
 export const PLAYERS = [
-  { id: 'u1', name: 'Arjun',   email: 'arjun@example.com', username: '@arjun07', initials: 'AR', password: 'demo123', isAdmin: true },
-  { id: 'u2', name: 'Rohan',   email: 'rohan@example.com', username: '@rohan', initials: 'RO', password: 'demo123' },
-  { id: 'u3', name: 'Vikram',  email: 'vikram@example.com', username: '@vikram', initials: 'VK', password: 'demo123' },
-  { id: 'u4', name: 'Sahil',   email: 'sahil@example.com', username: '@sahil', initials: 'SA', password: 'demo123' },
-  { id: 'u5', name: 'Kabir',   email: 'kabir@example.com', username: '@kabir', initials: 'KB', password: 'demo123' },
-  { id: 'u6', name: 'Manav',   email: 'manav@example.com', username: '@manav', initials: 'MN', password: 'demo123' },
-  { id: 'u7', name: 'Sagar',   email: 'sagar@example.com', username: '@sagar', initials: 'SG', password: 'demo123' },
-  { id: 'u8', name: 'Aditya',  email: 'aditya@example.com', username: '@aditya', initials: 'AD', password: 'demo123' },
-  { id: 'u9', name: 'Rahul',   email: 'rahul@example.com', username: '@rahul', initials: 'RA', password: 'demo123' },
-  { id: 'u10', name: 'Dev',    email: 'dev@example.com', username: '@dev', initials: 'DV', password: 'demo123' },
-  { id: 'u11', name: 'Karan',  email: 'karan@example.com', username: '@karan', initials: 'KR', password: 'demo123' },
-  { id: 'u12', name: 'Ishan',  email: 'ishan@example.com', username: '@ishan', initials: 'IS', password: 'demo123' },
+  { id: 'u1', name: 'Arjun',   email: 'cristianoo@gmail.com', username: '@cristiano', initials: 'AR', password: 'demo123', isAdmin: true }
 ];
 
 // Duration in minutes
