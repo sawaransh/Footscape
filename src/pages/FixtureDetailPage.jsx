@@ -183,7 +183,7 @@ export function FixtureDetailPage({ params, navigate }) {
               <BarChart3 size={17} /> Manage Live Match
             </button>
           )}
-          {status === 'past' && (
+          {fixture.status === 'completed' && (
             <button
               className="btn"
               onClick={() => navigate('summary', { fixtureId: fixture.id })}

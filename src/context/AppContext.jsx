@@ -134,7 +134,12 @@ export function AppProvider({ children }) {
     const end = timer.paused && timer.pausedAt ? new Date(timer.pausedAt).getTime() : Date.now();
     return Math.max(0, Math.floor((end - new Date(fixture.dateTime).getTime()) / 1000) - (timer.pausedDurationSeconds || 0));
   }, []);
-  const getScore = useCallback((fixture) => ({ a: fixture.teams.A.reduce((score, id) => score + (fixture.stats[id]?.goals || 0), 0), b: fixture.teams.B.reduce((score, id) => score + (fixture.stats[id]?.goals || 0), 0) }), []);
+  const getScore = useCallback((fixture) => fixture.result
+    ? { a: fixture.result.scoreA, b: fixture.result.scoreB }
+    : {
+      a: fixture.teams.A.reduce((score, id) => score + (fixture.stats[id]?.goals || 0), 0),
+      b: fixture.teams.B.reduce((score, id) => score + (fixture.stats[id]?.goals || 0), 0),
+    }, []);
   const getPlayer = useCallback((id) => players.find((player) => player.id === id), [players]);
   const getFixture = useCallback((id) => fixtures.find((fixture) => fixture.id === id), [fixtures]);
 

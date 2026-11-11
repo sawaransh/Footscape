@@ -19,6 +19,11 @@ const serializeFixture = (fixture) => ({
   description: fixture.description,
   status: fixture.status,
   endedAt: fixture.endedAt,
+  result: fixture.result ? {
+    scoreA: fixture.result.scoreA,
+    scoreB: fixture.result.scoreB,
+    outcome: fixture.result.outcome,
+  } : null,
   timer: {
     paused: Boolean(fixture.timer?.paused),
     pausedAt: fixture.timer?.pausedAt || null,

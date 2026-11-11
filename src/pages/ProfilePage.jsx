@@ -3,8 +3,31 @@ import { ArrowLeft, LogOut } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { BottomNav } from '../components/shared';
 
+function calculateLocalStats(fixtures, playerId, getScore) {
+  const stats = { appearances: 0, wins: 0, draws: 0, losses: 0, goals: 0, assists: 0, goalContributions: 0, goalsPerMatch: 0, winRate: 0 };
+
+  fixtures.forEach((fixture) => {
+    if (fixture.status !== 'completed') return;
+    const team = fixture.teams.A.includes(playerId) ? 'A' : fixture.teams.B.includes(playerId) ? 'B' : null;
+    if (!team) return;
+    const score = getScore(fixture);
+    const playerStats = fixture.stats[playerId] || { goals: 0, assists: 0 };
+    stats.appearances += 1;
+    stats.goals += playerStats.goals;
+    stats.assists += playerStats.assists;
+    if (score.a === score.b) stats.draws += 1;
+    else if ((team === 'A' && score.a > score.b) || (team === 'B' && score.b > score.a)) stats.wins += 1;
+    else stats.losses += 1;
+  });
+
+  stats.goalContributions = stats.goals + stats.assists;
+  stats.goalsPerMatch = stats.appearances ? Number((stats.goals / stats.appearances).toFixed(2)) : 0;
+  stats.winRate = stats.appearances ? Math.round((stats.wins / stats.appearances) * 1000) / 10 : 0;
+  return stats;
+}
+
 export function ProfilePage({ navigate, params = {} }) {
-  const { currentUser, fixtures: currentFixtures, getPlayer, getStatus, getScore, logout, loadPlayerProfile } = useApp();
+  const { currentUser, fixtures: currentFixtures, getPlayer, getScore, logout, loadPlayerProfile } = useApp();
   const playerId = params.playerId || currentUser.id;
   const isOwnProfile = playerId === currentUser.id;
   const [profile, setProfile] = useState(null);
@@ -12,17 +35,13 @@ export function ProfilePage({ navigate, params = {} }) {
   const localProfile = useMemo(() => {
     const player = isOwnProfile ? currentUser : getPlayer(playerId);
     if (!player) return null;
-    const fixtures = currentFixtures.filter((fixture) => getStatus(fixture) === 'past' && fixture.rsvpIds.includes(playerId));
+    const fixtures = currentFixtures.filter((fixture) => fixture.status === 'completed' && (fixture.teams.A.includes(playerId) || fixture.teams.B.includes(playerId)));
     return {
       player,
       fixtures,
-      stats: fixtures.reduce((totals, fixture) => ({
-        matches: totals.matches + 1,
-        goals: totals.goals + (fixture.stats[playerId]?.goals || 0),
-        assists: totals.assists + (fixture.stats[playerId]?.assists || 0),
-      }), { matches: 0, goals: 0, assists: 0 }),
+      stats: calculateLocalStats(fixtures, playerId, getScore),
     };
-  }, [currentFixtures, currentUser, getPlayer, getStatus, isOwnProfile, playerId]);
+  }, [currentFixtures, currentUser, getPlayer, getScore, isOwnProfile, playerId]);
 
   useEffect(() => {
     let active = true;
@@ -52,10 +71,19 @@ export function ProfilePage({ navigate, params = {} }) {
         </div>
         <div>
           <div className="section-label" style={{ marginBottom: 10 }}>Season Stats</div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>
-            <div className="stat-box"><div className="stat-value">{stats.matches}</div><div className="stat-label">Matches</div></div>
-            <div className="stat-box"><div className="stat-value">{stats.goals}</div><div className="stat-label">Goals</div></div>
-            <div className="stat-box"><div className="stat-value">{stats.assists}</div><div className="stat-label">Assists</div></div>
+          <div className="profile-stat-grid profile-stat-grid-primary">
+            <div className="stat-box"><div className="stat-value">{stats.appearances}</div><div className="stat-label">Appearances</div></div>
+            <div className="stat-box"><div className="stat-value">{stats.goalContributions}</div><div className="stat-label">Goal Contributions</div></div>
+            <div className="stat-box"><div className="stat-value">{stats.winRate}%</div><div className="stat-label">Win Rate</div></div>
+          </div>
+          <div className="card profile-stat-detail-card">
+            <div className="profile-record"><span>Record</span><strong>{stats.wins}W <i>·</i> {stats.draws}D <i>·</i> {stats.losses}L</strong></div>
+            <div className="profile-stat-grid">
+              <div><span>Goals</span><strong>{stats.goals}</strong></div>
+              <div><span>Assists</span><strong>{stats.assists}</strong></div>
+              <div><span>Goals / Match</span><strong>{stats.goalsPerMatch}</strong></div>
+              <div><span>Matches Won</span><strong>{stats.wins}</strong></div>
+            </div>
           </div>
         </div>
         <div>

@@ -5,6 +5,7 @@ const User = require("../models/User");
 const authenticate = require("../middleware/authenticate");
 const { populateFixture, serializeFixture } = require("../utils/fixture");
 const { createNotifications } = require("../utils/notifications");
+const { outcomeForScore, scoreForFixture } = require("../utils/playerStatistics");
 
 const router = express.Router();
 router.use(authenticate);
@@ -31,6 +32,14 @@ function goalMessage(playerName, time) {
     `A clinical finish from ${playerName} at ${time}.`,
   ];
   return options[Math.floor(Math.random() * options.length)];
+}
+
+function ensureEditable(res, fixture) {
+  if (fixture.status !== "scheduled") {
+    res.status(409).json({ message: "Completed and abandoned matches are locked" });
+    return false;
+  }
+  return true;
 }
 
 router.get("/community/:communityId", async (req, res, next) => {
@@ -77,6 +86,7 @@ router.patch("/:fixtureId/rsvp", async (req, res, next) => {
   try {
     const fixture = await Fixture.findById(req.params.fixtureId);
     if (!fixture) return res.status(404).json({ message: "Fixture not found" });
+    if (!ensureEditable(res, fixture)) return;
     if (!await membershipFor(req.user._id, fixture.community)) return res.status(403).json({ message: "You are not a member of this community" });
     const userId = req.user._id.toString();
     fixture.rsvp = fixture.rsvp.filter((id) => id.toString() !== userId);
@@ -92,6 +102,7 @@ router.patch("/:fixtureId/teams", async (req, res, next) => {
   try {
     const fixture = await Fixture.findById(req.params.fixtureId);
     if (!fixture) return res.status(404).json({ message: "Fixture not found" });
+    if (!ensureEditable(res, fixture)) return;
     const membership = await membershipFor(req.user._id, fixture.community);
     if (!membership || membership.role !== "admin") return res.status(403).json({ message: "Only community admins can edit teams" });
     const { playerId, team } = req.body;
@@ -111,6 +122,7 @@ router.patch("/:fixtureId/stats", async (req, res, next) => {
   try {
     const fixture = await Fixture.findById(req.params.fixtureId);
     if (!fixture) return res.status(404).json({ message: "Fixture not found" });
+    if (!ensureEditable(res, fixture)) return;
     const membership = await membershipFor(req.user._id, fixture.community);
     if (!membership || membership.role !== "admin") return res.status(403).json({ message: "Only community admins can update match statistics" });
     const { playerId, field, delta } = req.body;
@@ -141,6 +153,7 @@ router.patch("/:fixtureId/timer", async (req, res, next) => {
   try {
     const fixture = await Fixture.findById(req.params.fixtureId);
     if (!fixture) return res.status(404).json({ message: "Fixture not found" });
+    if (!ensureEditable(res, fixture)) return;
     const membership = await membershipFor(req.user._id, fixture.community);
     if (!membership || membership.role !== "admin") return res.status(403).json({ message: "Only community admins can control the timer" });
     if (!fixture.timer) fixture.timer = { paused: false, pausedAt: null, pausedDurationSeconds: 0 };
@@ -166,6 +179,7 @@ router.post("/:fixtureId/events", async (req, res, next) => {
   try {
     const fixture = await Fixture.findById(req.params.fixtureId);
     if (!fixture) return res.status(404).json({ message: "Fixture not found" });
+    if (!ensureEditable(res, fixture)) return;
     const membership = await membershipFor(req.user._id, fixture.community);
     if (!membership || membership.role !== "admin") return res.status(403).json({ message: "Only community admins can add events" });
     const message = req.body.message?.trim();
@@ -185,8 +199,11 @@ router.patch("/:fixtureId/end", async (req, res, next) => {
     if (!fixture) return res.status(404).json({ message: "Fixture not found" });
     const membership = await membershipFor(req.user._id, fixture.community);
     if (!membership || membership.role !== "admin") return res.status(403).json({ message: "Only community admins can end a match" });
+    if (!ensureEditable(res, fixture)) return;
+    const score = scoreForFixture(fixture);
     fixture.status = "completed";
     fixture.endedAt = new Date();
+    fixture.result = { scoreA: score.a, scoreB: score.b, outcome: outcomeForScore(score) };
     await fixture.save();
     const result = serializeFixture(await populateFixture(Fixture.findById(fixture._id)));
     emitFixture(req, result);

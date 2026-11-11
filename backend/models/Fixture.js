@@ -13,6 +13,12 @@ const eventSchema = new mongoose.Schema({
   elapsedSeconds: { type: Number, required: true, min: 0 },
 }, { timestamps: true });
 
+const resultSchema = new mongoose.Schema({
+  scoreA: { type: Number, required: true, min: 0 },
+  scoreB: { type: Number, required: true, min: 0 },
+  outcome: { type: String, enum: ["team-a", "team-b", "draw"], required: true },
+}, { _id: false });
+
 const fixtureSchema = new mongoose.Schema({
   community: { type: mongoose.Schema.Types.ObjectId, ref: "Community", required: true, index: true },
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
@@ -21,8 +27,9 @@ const fixtureSchema = new mongoose.Schema({
   duration: { type: Number, default: 90, min: 1, max: 360 },
   venue: { type: String, trim: true, default: "" },
   description: { type: String, trim: true, default: "" },
-  status: { type: String, enum: ["scheduled", "completed"], default: "scheduled" },
+  status: { type: String, enum: ["scheduled", "completed", "abandoned"], default: "scheduled" },
   endedAt: { type: Date },
+  result: { type: resultSchema, default: null },
   timer: {
     paused: { type: Boolean, default: false },
     pausedAt: { type: Date, default: null },

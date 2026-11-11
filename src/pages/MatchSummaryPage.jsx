@@ -7,6 +7,21 @@ export function MatchSummaryPage({ params, navigate }) {
   const fixture = getFixture(params.fixtureId);
 
   if (!fixture) return null;
+  if (fixture.status !== 'completed') {
+    return <>
+      <div className="page-header">
+        <button className="back-btn" onClick={() => navigate('fixture', { fixtureId: fixture.id })}><ArrowLeft size={18} /></button>
+        <h2 style={{ fontSize: 16 }}>Match Summary</h2>
+        <span style={{ width: 26 }} />
+      </div>
+      <div className="page-content" style={{ justifyContent: 'center', textAlign: 'center' }}>
+        <div className="card" style={{ padding: 24 }}>
+          <h3>Match not finalised</h3>
+          <p style={{ color: 'var(--text-secondary)', marginTop: 8 }}>Statistics are added to player history only after an admin completes the match.</p>
+        </div>
+      </div>
+    </>;
+  }
   const score = getScore(fixture);
 
   const date = new Date(fixture.dateTime);

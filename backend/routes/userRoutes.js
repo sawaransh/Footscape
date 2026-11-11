@@ -4,6 +4,7 @@ const Membership = require("../models/Membership");
 const Fixture = require("../models/Fixture");
 const authenticate = require("../middleware/authenticate");
 const { populateFixture, serializeFixture } = require("../utils/fixture");
+const { calculatePlayerStatistics } = require("../utils/playerStatistics");
 
 const router = express.Router();
 router.use(authenticate);
@@ -24,15 +25,11 @@ router.get("/:userId/profile", async (req, res, next) => {
 
     const fixtures = await populateFixture(Fixture.find({
       community: { $in: communityIds },
-      rsvp: player._id,
-      $or: [{ status: "completed" }, { dateTime: { $lt: new Date() } }],
+      status: "completed",
+      $or: [{ "teams.A": player._id }, { "teams.B": player._id }],
     }).sort({ dateTime: -1 }));
     const serializedFixtures = fixtures.map(serializeFixture);
-    const stats = serializedFixtures.reduce((totals, fixture) => ({
-      matches: totals.matches + 1,
-      goals: totals.goals + (fixture.stats[player._id.toString()]?.goals || 0),
-      assists: totals.assists + (fixture.stats[player._id.toString()]?.assists || 0),
-    }), { matches: 0, goals: 0, assists: 0 });
+    const stats = calculatePlayerStatistics(fixtures, player._id.toString());
     return res.json({
       player: { id: player._id.toString(), name: player.name, username: player.username, initials: player.initials },
       stats,
