@@ -1,4 +1,4 @@
-import { Home, Calendar, User, CalendarDays, MapPin, ChevronRight, Circle } from 'lucide-react';
+import { Home, Calendar, User, CalendarDays, MapPin, ChevronRight, Circle, MapPinned } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
 // ── Bottom Navigation ──────────────────────────────────────────
@@ -6,6 +6,7 @@ export function BottomNav({ active, navigate }) {
   const items = [
     { key: 'home',     label: 'Home',     Icon: Home },
     { key: 'community', label: 'Community', Icon: Calendar },
+    { key: 'venues',   label: 'Venues',   Icon: MapPinned },
     { key: 'profile',  label: 'Profile',  Icon: User },
   ];
   return (

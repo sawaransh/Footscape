@@ -1,5 +1,6 @@
 const express = require("express");
 const dotenv = require("dotenv");
+dotenv.config();
 const cors = require("cors");
 const { createServer } = require("http");
 const { Server } = require("socket.io");
@@ -10,10 +11,9 @@ const communityRoutes = require("./routes/communityRoutes");
 const fixtureRoutes = require("./routes/fixtureRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
 const userRoutes = require("./routes/userRoutes");
+const venueRoutes = require("./routes/venueRoutes");
 const Membership = require("./models/Membership");
 const { sendFixtureReminders } = require("./utils/notifications");
-
-dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 8000;
@@ -59,6 +59,7 @@ app.use("/api/communities", communityRoutes);
 app.use("/api/fixtures", fixtureRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/venues", venueRoutes);
 
 app.use((error, req, res, next) => {
   if (res.headersSent) return next(error);

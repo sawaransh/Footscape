@@ -10,6 +10,9 @@ import { LiveMatchPage } from './pages/LiveMatchPage';
 import { MatchSummaryPage } from './pages/MatchSummaryPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { CommunityPage } from './pages/CommunityPage';
+import { VenuesPage } from './pages/VenuesPage';
+import { VenueMatchPage } from './pages/VenueMatchPage';
+import { ScheduleVenueMatchPage } from './pages/ScheduleVenueMatchPage';
 
 const routeFor = (name, params = {}) => {
   if (name.startsWith('/')) return name;
@@ -18,6 +21,7 @@ const routeFor = (name, params = {}) => {
     landing: '/connect',
     home: '/home',
     community: '/community',
+    venues: '/venues',
     profile: '/profile',
     'player-profile': `/players/${params.playerId}`,
     'create-fixture': '/fixtures/new',
@@ -73,6 +77,9 @@ function AppRoutes() {
         <Route path="/" element={<Navigate to="/home" replace />} />
         <Route path="/home" element={<Page Component={HomePage} />} />
         <Route path="/community" element={<Page Component={CommunityPage} />} />
+        <Route path="/venues" element={<Page Component={VenuesPage} />} />
+        <Route path="/venues/schedule" element={<Page Component={ScheduleVenueMatchPage} />} />
+        <Route path="/venues/matches/:matchId" element={<Page Component={VenueMatchPage} />} />
         <Route path="/profile" element={<Page Component={ProfilePage} />} />
         <Route path="/players/:playerId" element={<Page Component={ProfilePage} />} />
         <Route path="/connect" element={<Page Component={CreateJoinCommunity} />} />
