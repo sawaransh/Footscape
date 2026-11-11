@@ -6,6 +6,7 @@ import { apiRequest, clearAuthToken, getAuthToken, setAuthToken } from '../servi
 const AppContext = createContext(null);
 const ACTIVE_COMMUNITY_KEY = 'footscape.activeCommunityId';
 const THEME_KEY = 'footscape.theme';
+const ADMIN_MODE_KEY = 'footscape.adminMode';
 const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:8000';
 
 export function AppProvider({ children }) {
@@ -17,6 +18,7 @@ export function AppProvider({ children }) {
   const [notifications, setNotifications] = useState([]);
   const [authLoading, setAuthLoading] = useState(Boolean(getAuthToken()));
   const [theme, setTheme] = useState(() => localStorage.getItem(THEME_KEY) === 'light' ? 'light' : 'dark');
+  const [adminMode, setAdminModeState] = useState(() => localStorage.getItem(ADMIN_MODE_KEY) === 'true');
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
@@ -111,6 +113,10 @@ export function AppProvider({ children }) {
     setAuthenticatedUser(null); setCommunities([]); setCommunity(null); setPlayers([]); setFixtures([]); setNotifications([]);
   }, []);
   const toggleTheme = useCallback(() => setTheme((current) => current === 'dark' ? 'light' : 'dark'), []);
+  const setAdminMode = useCallback((enabled) => {
+    setAdminModeState(Boolean(enabled));
+    localStorage.setItem(ADMIN_MODE_KEY, enabled ? 'true' : 'false');
+  }, []);
 
   const createCommunity = useCallback(async (name) => {
     try {
@@ -193,6 +199,6 @@ export function AppProvider({ children }) {
   }, []);
   const loadPlayerProfile = useCallback(async (playerId) => apiRequest(`/users/${playerId}/profile`), []);
 
-  return <AppContext.Provider value={{ fixtures, players, community, communities, currentUser, authLoading, notifications, theme, toggleTheme, signup, login, requestSignupOtp, requestLoginOtp, verifyOtp, logout, createCommunity, joinCommunity, selectCommunity, getStatus, getElapsed, getScore, createFixture, toggleRsvp, assignTeam, updateStat, setTimerPaused, addMatchEvent, endMatch, markNotificationRead, markAllNotificationsRead, loadPlayerProfile, getPlayer, getFixture }}>{children}</AppContext.Provider>;
+  return <AppContext.Provider value={{ fixtures, players, community, communities, currentUser, authLoading, notifications, theme, toggleTheme, adminMode, setAdminMode, signup, login, requestSignupOtp, requestLoginOtp, verifyOtp, logout, createCommunity, joinCommunity, selectCommunity, getStatus, getElapsed, getScore, createFixture, toggleRsvp, assignTeam, updateStat, setTimerPaused, addMatchEvent, endMatch, markNotificationRead, markAllNotificationsRead, loadPlayerProfile, getPlayer, getFixture }}>{children}</AppContext.Provider>;
 }
 export const useApp = () => useContext(AppContext);

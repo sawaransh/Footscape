@@ -13,7 +13,7 @@ const organizerEmails = new Set([
     .map((email) => email.trim().toLowerCase())
     .filter(Boolean),
 ]);
-const canSchedule = (user) => organizerEmails.has(user.email?.trim().toLowerCase());
+const canSchedule = (user) => ["partner", "admin", "master_admin"].includes(user.globalRole) || organizerEmails.has(user.email?.trim().toLowerCase());
 const paymentConfigured = () => Boolean(process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET && process.env.RAZORPAY_WEBHOOK_SECRET);
 const id = (value) => value?._id?.toString() || value?.toString();
 

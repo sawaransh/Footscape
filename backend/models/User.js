@@ -27,6 +27,12 @@ const userSchema = new mongoose.Schema(
       required: true,
       select: false,
     },
+    globalRole: {
+      type: String,
+      enum: ["member", "partner", "admin", "master_admin"],
+      default: "member",
+      index: true,
+    },
   },
   { timestamps: true }
 );

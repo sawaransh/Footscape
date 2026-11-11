@@ -1041,6 +1041,54 @@ select.input-field option { background: #0a2115; color: #f4fff6; }
 .profile-theme-copy strong { color: var(--text-primary); font-size: 13px; }
 .profile-theme-copy small { margin-top: 2px; color: var(--text-secondary); font-size: 11px; }
 .profile-theme-icon { width: 34px; height: 34px; flex: 0 0 auto; display: grid; place-items: center; border-radius: 10px; color: var(--green); background: var(--green-light); }
+
+/* Admin workspace */
+.admin-page-header { gap: 12px; }
+.admin-page-header > div { flex: 1; text-align: center; }
+.admin-page-header h2 { margin: 2px 0 0; font-size: 16px; }
+.admin-eyebrow { color: var(--green); font-size: 9px; font-weight: 900; letter-spacing: 1.5px; }
+.admin-mode-exit { display: inline-flex; align-items: center; gap: 7px; border: 1px solid var(--border); border-radius: 999px; padding: 6px 9px; color: var(--text-secondary); background: var(--surface); font-size: 10px; font-weight: 800; }
+.admin-mode-exit span { width: 7px; height: 7px; border-radius: 50%; background: var(--text-muted); }
+.admin-mode-exit.is-on { color: var(--green); border-color: rgba(40,230,120,.35); }
+.admin-mode-exit.is-on span { background: var(--green); box-shadow: 0 0 8px rgba(40,230,120,.65); }
+.admin-content { display: flex; flex-direction: column; gap: 16px; padding-bottom: 112px; }
+.admin-welcome { display: flex; align-items: center; gap: 12px; padding: 16px; border: 1px solid rgba(48,226,123,.2); border-radius: 16px; background: linear-gradient(120deg,rgba(37,225,121,.1),var(--surface)); }
+.admin-welcome-icon { display: grid; place-items: center; width: 42px; height: 42px; flex: 0 0 auto; border-radius: 13px; color: var(--green); background: var(--green-light); }
+.admin-welcome strong,.admin-welcome span { display: block; }
+.admin-welcome strong { color: var(--text-primary); font-size: 14px; }
+.admin-welcome span { margin-top: 3px; color: var(--text-secondary); font-size: 11px; line-height: 1.5; }
+.admin-stat-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 9px; }
+.admin-stat-card { display: grid; grid-template-columns: 20px 1fr; align-items: center; gap: 2px 7px; padding: 12px 11px; }
+.admin-stat-card svg { grid-row: span 2; color: var(--green); }
+.admin-stat-card strong { color: var(--text-primary); font-size: 17px; line-height: 1.1; }
+.admin-stat-card span { color: var(--text-muted); font-size: 9px; white-space: nowrap; }
+.admin-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; padding: 4px; border: 1px solid var(--border); border-radius: 13px; background: var(--surface); }
+.admin-tabs button { display: flex; align-items: center; justify-content: center; gap: 7px; min-height: 38px; border: 0; border-radius: 9px; color: var(--text-secondary); background: transparent; font: inherit; font-size: 12px; font-weight: 800; }
+.admin-tabs button.active { color: var(--green); background: var(--green-light); }
+.admin-search { display: flex; align-items: center; gap: 9px; min-height: 44px; padding: 0 12px; border: 1px solid var(--border); border-radius: 12px; color: var(--text-muted); background: var(--surface); }
+.admin-search input { min-width: 0; flex: 1; border: 0; outline: 0; color: var(--text-primary); background: transparent; font: inherit; font-size: 12px; }
+.admin-search > span { font-size: 9px; }
+.admin-list { display: flex; flex-direction: column; gap: 9px; }
+.admin-row { display: flex; align-items: center; gap: 11px; padding: 13px; min-width: 0; }
+.admin-row-icon { display: grid; place-items: center; width: 39px; height: 39px; flex: 0 0 auto; border-radius: 12px; color: var(--green); background: var(--green-light); }
+.admin-row-main { display: flex; min-width: 0; flex: 1; flex-direction: column; gap: 3px; }
+.admin-row-main > strong { overflow: hidden; color: var(--text-primary); font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+.admin-row-main > span,.admin-row-main > small { overflow: hidden; color: var(--text-secondary); font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
+.admin-icon-button { display: grid; place-items: center; width: 34px; height: 34px; flex: 0 0 auto; border: 1px solid var(--border); border-radius: 10px; color: var(--text-secondary); background: var(--surface); }
+.admin-row-actions { display: flex; gap: 5px; }
+.admin-icon-button.confirm { color: var(--green); border-color: rgba(40,230,120,.3); }
+.admin-icon-button:disabled { opacity: .5; }
+.admin-community-input { min-height: 34px; padding: 5px 9px; font-size: 12px; }
+.admin-avatar { width: 39px; height: 39px; flex: 0 0 auto; font-size: 12px; }
+.admin-you-label { display: inline-block; margin-left: 6px; color: var(--green); font-size: 9px; }
+.admin-role-pill { flex: 0 0 auto; border: 1px solid rgba(40,230,120,.25); border-radius: 999px; padding: 6px 9px; color: var(--green); background: var(--green-light); font-size: 9px; font-weight: 900; }
+.admin-role-select-wrap { position: relative; flex: 0 0 auto; }
+.admin-role-select { width: 98px; min-height: 34px; padding: 6px 21px 6px 9px; appearance: none; font-size: 10px; font-weight: 800; }
+.admin-role-select-wrap > svg { position: absolute; top: 11px; right: 7px; pointer-events: none; color: var(--text-muted); }
+.admin-role-note,.admin-permission-footnote { color: var(--text-muted); font-size: 10px; line-height: 1.5; }
+.admin-empty,.admin-loading { padding: 20px; color: var(--text-secondary); text-align: center; font-size: 12px; }
+.admin-mode-card { border-color: rgba(40,230,120,.18); }
+:root[data-theme="light"] .admin-welcome { border-color: rgba(20,145,72,.2); }
 .theme-switch { width: 46px; height: 28px; flex: 0 0 auto; padding: 3px; border: 1px solid var(--border); border-radius: 999px; background: var(--surface-2); cursor: pointer; transition: background-color 180ms ease, border-color 180ms ease; }
 .theme-switch span { display: block; width: 20px; height: 20px; border-radius: 50%; background: #8da398; box-shadow: 0 2px 5px rgba(0,0,0,0.18); transition: transform 180ms var(--ease-out), background-color 180ms ease; }
 .theme-switch.is-on { border-color: var(--green); background: var(--green); }

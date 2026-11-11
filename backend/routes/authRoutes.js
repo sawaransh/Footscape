@@ -8,7 +8,8 @@ const authenticate = require("../middleware/authenticate");
 const { sendAuthOtp } = require("../utils/email");
 
 const router = express.Router();
-const toPublicUser = (user) => ({ id: user._id.toString(), name: user.name, email: user.email, username: user.username, initials: user.initials });
+const MASTER_ADMIN_EMAIL = "mittal.sawaransh@gmail.com";
+const toPublicUser = (user) => ({ id: user._id.toString(), name: user.name, email: user.email, username: user.username, initials: user.initials, globalRole: user.email?.trim().toLowerCase() === MASTER_ADMIN_EMAIL ? "master_admin" : (user.globalRole || "member") });
 const createToken = (user) => jwt.sign({ userId: user._id.toString() }, process.env.JWT_SECRET, { expiresIn: "7d" });
 const hashOtp = (code) => crypto.createHmac("sha256", process.env.JWT_SECRET).update(code).digest("hex");
 const makeOtp = () => crypto.randomInt(100000, 1000000).toString();
@@ -32,7 +33,7 @@ router.post("/signup", async (req, res, next) => {
     const username = `@${email?.split("@")[0] || ""}`;
     if (!name || !email?.includes("@") || !password || password.length < 6) return res.status(400).json({ message: "Provide a name, valid email, and password of at least 6 characters" });
     if (await User.exists({ $or: [{ email }, { username }] })) return res.status(409).json({ message: "An account already exists with this email" });
-    const user = await User.create({ name, email, username, passwordHash: await bcrypt.hash(password, 12) });
+    const user = await User.create({ name, email, username, passwordHash: await bcrypt.hash(password, 12), globalRole: email === MASTER_ADMIN_EMAIL ? "master_admin" : "member" });
     return res.status(201).json({ user: toPublicUser(user), token: createToken(user), isNewUser: true });
   } catch (error) { return next(error); }
 });

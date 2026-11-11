@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { ArrowLeft, LogOut, Moon, Sun } from 'lucide-react';
+import { ArrowLeft, LogOut, Moon, ShieldCheck, Sun } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { BottomNav } from '../components/shared';
 
@@ -27,7 +27,7 @@ function calculateLocalStats(fixtures, playerId, getScore) {
 }
 
 export function ProfilePage({ navigate, params = {} }) {
-  const { currentUser, fixtures: currentFixtures, getPlayer, getScore, logout, loadPlayerProfile, theme, toggleTheme } = useApp();
+  const { currentUser, fixtures: currentFixtures, getPlayer, getScore, logout, loadPlayerProfile, theme, toggleTheme, adminMode, setAdminMode } = useApp();
   const playerId = params.playerId || currentUser.id;
   const isOwnProfile = playerId === currentUser.id;
   const [profile, setProfile] = useState(null);
@@ -67,8 +67,15 @@ export function ProfilePage({ navigate, params = {} }) {
           <div className="avatar-xl" style={{ margin: '0 auto 12px' }}>{player.initials}</div>
           <h3>{player.name}</h3>
           <p style={{ color: 'var(--text-secondary)', marginTop: 2 }}>{player.username || '@' + player.name.toLowerCase()}</p>
-          {isOwnProfile && currentUser.isAdmin && <span className="badge badge-upcoming" style={{ marginTop: 8 }}>Admin</span>}
+          {isOwnProfile && currentUser.globalRole && currentUser.globalRole !== 'member' && <span className="badge badge-upcoming" style={{ marginTop: 8 }}>{currentUser.globalRole === 'master_admin' ? 'Master admin' : currentUser.globalRole === 'admin' ? 'Admin' : 'Partner'}</span>}
         </div>
+        {isOwnProfile && ['admin', 'master_admin'].includes(currentUser.globalRole) && <div className="card profile-theme-card admin-mode-card">
+          <div className="profile-theme-copy">
+            <span className="profile-theme-icon"><ShieldCheck size={18} /></span>
+            <span><strong>Admin mode</strong><small>{adminMode ? 'Community and user management is enabled' : 'Manage communities and account access'}</small></span>
+          </div>
+          <button className={`theme-switch ${adminMode ? 'is-on' : ''}`} type="button" role="switch" aria-checked={adminMode} aria-label="Toggle admin mode" onClick={() => { const enabled = !adminMode; setAdminMode(enabled); if (enabled) navigate('/admin'); }}><span /></button>
+        </div>}
         {isOwnProfile && <div className="card profile-theme-card">
           <div className="profile-theme-copy">
             <span className="profile-theme-icon">{theme === 'light' ? <Sun size={18} /> : <Moon size={18} />}</span>

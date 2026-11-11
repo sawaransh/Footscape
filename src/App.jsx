@@ -13,6 +13,7 @@ import { CommunityPage } from './pages/CommunityPage';
 import { VenuesPage } from './pages/VenuesPage';
 import { VenueMatchPage } from './pages/VenueMatchPage';
 import { ScheduleVenueMatchPage } from './pages/ScheduleVenueMatchPage';
+import { AdminPage } from './pages/AdminPage';
 
 const routeFor = (name, params = {}) => {
   if (name.startsWith('/')) return name;
@@ -81,6 +82,7 @@ function AppRoutes() {
         <Route path="/venues/schedule" element={<Page Component={ScheduleVenueMatchPage} />} />
         <Route path="/venues/matches/:matchId" element={<Page Component={VenueMatchPage} />} />
         <Route path="/profile" element={<Page Component={ProfilePage} />} />
+        <Route path="/admin" element={<Page Component={AdminPage} />} />
         <Route path="/players/:playerId" element={<Page Component={ProfilePage} />} />
         <Route path="/connect" element={<Page Component={CreateJoinCommunity} />} />
         <Route path="/fixtures/new" element={<Page Component={CreateFixturePage} />} />

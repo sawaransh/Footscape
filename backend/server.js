@@ -12,6 +12,7 @@ const fixtureRoutes = require("./routes/fixtureRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
 const userRoutes = require("./routes/userRoutes");
 const venueRoutes = require("./routes/venueRoutes");
+const adminRoutes = require("./routes/adminRoutes");
 const razorpayWebhook = require("./routes/razorpayWebhook");
 const Membership = require("./models/Membership");
 const { sendFixtureReminders } = require("./utils/notifications");
@@ -61,6 +62,7 @@ app.use("/api/communities", communityRoutes);
 app.use("/api/fixtures", fixtureRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/admin", adminRoutes);
 app.use("/api/venues", venueRoutes);
 
 app.use((error, req, res, next) => {
