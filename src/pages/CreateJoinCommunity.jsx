@@ -51,7 +51,7 @@ export function CreateJoinCommunity({ navigate }) {
         <div className="community-onboarding-brand">
           <img src="/brand/footscape-title.png" alt="Footscape" />
           <p>
-            Welcome, <span style={{ color: 'rgba(255,255,255,0.85)' }}>{currentUser?.name}</span>.
+            Welcome, <span className="community-onboarding-name">{currentUser?.name}</span>.
             <br />
             Create your crew or join one.
           </p>
@@ -93,7 +93,7 @@ export function CreateJoinCommunity({ navigate }) {
             />
           )}
 
-          {error && <p className="form-error" style={{ color: '#fecaca' }}>{error}</p>}
+          {error && <p className="form-error community-onboarding-error">{error}</p>}
 
           <button
             className="btn btn-primary"

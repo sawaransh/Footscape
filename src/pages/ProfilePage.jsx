@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { ArrowLeft, LogOut } from 'lucide-react';
+import { ArrowLeft, LogOut, Moon, Sun } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { BottomNav } from '../components/shared';
 
@@ -27,7 +27,7 @@ function calculateLocalStats(fixtures, playerId, getScore) {
 }
 
 export function ProfilePage({ navigate, params = {} }) {
-  const { currentUser, fixtures: currentFixtures, getPlayer, getScore, logout, loadPlayerProfile } = useApp();
+  const { currentUser, fixtures: currentFixtures, getPlayer, getScore, logout, loadPlayerProfile, theme, toggleTheme } = useApp();
   const playerId = params.playerId || currentUser.id;
   const isOwnProfile = playerId === currentUser.id;
   const [profile, setProfile] = useState(null);
@@ -69,6 +69,15 @@ export function ProfilePage({ navigate, params = {} }) {
           <p style={{ color: 'var(--text-secondary)', marginTop: 2 }}>{player.username || '@' + player.name.toLowerCase()}</p>
           {isOwnProfile && currentUser.isAdmin && <span className="badge badge-upcoming" style={{ marginTop: 8 }}>Admin</span>}
         </div>
+        {isOwnProfile && <div className="card profile-theme-card">
+          <div className="profile-theme-copy">
+            <span className="profile-theme-icon">{theme === 'light' ? <Sun size={18} /> : <Moon size={18} />}</span>
+            <span><strong>Light theme</strong><small>{theme === 'light' ? 'Bright background enabled' : 'Switch to a bright background'}</small></span>
+          </div>
+          <button className={`theme-switch ${theme === 'light' ? 'is-on' : ''}`} type="button" role="switch" aria-checked={theme === 'light'} aria-label="Toggle light theme" onClick={toggleTheme}>
+            <span />
+          </button>
+        </div>}
         <div>
           <div className="section-label" style={{ marginBottom: 10 }}>Season Stats</div>
           <div className="profile-stat-grid profile-stat-grid-primary">

@@ -65,20 +65,19 @@ export function FixtureDetailPage({ params, navigate }) {
 
           {/* Score if not upcoming */}
           {status !== 'upcoming' && teamAssigned && (
-            <div style={{
+            <div className={`fixture-score-card ${status === 'live' ? 'is-live' : ''}`} style={{
               marginTop: 16, padding: '14px',
-              background: status === 'live' ? '#0d1f0f' : 'var(--surface-2)',
               borderRadius: 'var(--radius-md)',
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16,
             }}>
               <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: 11, color: status === 'live' ? 'rgba(255,255,255,0.6)' : 'var(--text-muted)', marginBottom: 4 }}>Team A</div>
-                <span style={{ fontSize: 36, fontWeight: 800, color: status === 'live' ? 'white' : 'var(--text-primary)' }}>{score.a}</span>
+                <div className="fixture-score-label" style={{ fontSize: 11, marginBottom: 4 }}>Team A</div>
+                <span className="fixture-score-value" style={{ fontSize: 36, fontWeight: 800 }}>{score.a}</span>
               </div>
-              <span style={{ fontSize: 20, color: status === 'live' ? 'rgba(255,255,255,0.4)' : 'var(--text-muted)' }}>–</span>
+              <span className="fixture-score-separator" style={{ fontSize: 20 }}>–</span>
               <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: 11, color: status === 'live' ? 'rgba(255,255,255,0.6)' : 'var(--text-muted)', marginBottom: 4 }}>Team B</div>
-                <span style={{ fontSize: 36, fontWeight: 800, color: status === 'live' ? 'white' : 'var(--text-primary)' }}>{score.b}</span>
+                <div className="fixture-score-label" style={{ fontSize: 11, marginBottom: 4 }}>Team B</div>
+                <span className="fixture-score-value" style={{ fontSize: 36, fontWeight: 800 }}>{score.b}</span>
               </div>
             </div>
           )}
