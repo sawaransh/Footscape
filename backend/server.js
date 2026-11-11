@@ -12,6 +12,7 @@ const fixtureRoutes = require("./routes/fixtureRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
 const userRoutes = require("./routes/userRoutes");
 const venueRoutes = require("./routes/venueRoutes");
+const razorpayWebhook = require("./routes/razorpayWebhook");
 const Membership = require("./models/Membership");
 const { sendFixtureReminders } = require("./utils/notifications");
 
@@ -42,8 +43,9 @@ io.on("connection", (socket) => {
   });
 });
 
-app.use(express.json());
 app.use(cors(corsOptions));
+app.post("/api/venues/razorpay-webhook", express.raw({ type: "application/json", limit: "1mb" }), razorpayWebhook);
+app.use(express.json());
 
 app.get("/", (req,res) => {
  

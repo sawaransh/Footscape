@@ -14,7 +14,7 @@ const organizerEmails = new Set([
     .filter(Boolean),
 ]);
 const canSchedule = (user) => organizerEmails.has(user.email?.trim().toLowerCase());
-const paymentConfigured = () => Boolean(process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET);
+const paymentConfigured = () => Boolean(process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET && process.env.RAZORPAY_WEBHOOK_SECRET);
 const id = (value) => value?._id?.toString() || value?.toString();
 
 function serialize(match) {
@@ -107,7 +107,7 @@ router.post("/matches/:matchId/bookings", async (req, res, next) => {
 
     let order = null;
     if (match.price > 0) {
-      if (!paymentConfigured()) return res.status(503).json({ message: "Online payment is not configured yet. Ask the app owner to add the Razorpay keys." });
+      if (!paymentConfigured()) return res.status(503).json({ message: "Online payments are still being configured. Ask the app owner to add the Razorpay API and webhook credentials." });
       const response = await fetch("https://api.razorpay.com/v1/orders", {
         method: "POST",
         headers: { Authorization: `Basic ${Buffer.from(`${process.env.RAZORPAY_KEY_ID}:${process.env.RAZORPAY_KEY_SECRET}`).toString("base64")}`, "Content-Type": "application/json" },
@@ -131,13 +131,26 @@ router.post("/matches/:matchId/bookings/verify", async (req, res, next) => {
   try {
     const { bookingId, razorpay_order_id: orderId, razorpay_payment_id: paymentId, razorpay_signature: signature } = req.body;
     if (!paymentConfigured()) return res.status(503).json({ message: "Payment verification is unavailable" });
-    const expected = crypto.createHmac("sha256", process.env.RAZORPAY_KEY_SECRET || "").update(`${orderId}|${paymentId}`).digest("hex");
-    const expectedBuffer = Buffer.from(expected);
-    const suppliedBuffer = Buffer.from(String(signature || ""));
-    if (expectedBuffer.length !== suppliedBuffer.length || !crypto.timingSafeEqual(expectedBuffer, suppliedBuffer)) return res.status(400).json({ message: "Payment verification failed" });
+    if (!bookingId || !orderId || !paymentId || !signature) return res.status(400).json({ message: "Payment details are incomplete" });
     const match = await VenueMatch.findById(req.params.matchId);
     const booking = match?.bookings.id(bookingId);
     if (!booking || id(booking.user) !== req.user._id.toString() || booking.paymentOrderId !== orderId) return res.status(404).json({ message: "Booking not found" });
+    const expected = crypto.createHmac("sha256", process.env.RAZORPAY_KEY_SECRET).update(`${booking.paymentOrderId}|${paymentId}`).digest("hex");
+    const expectedBuffer = Buffer.from(expected);
+    const suppliedBuffer = Buffer.from(String(signature || ""));
+    if (expectedBuffer.length !== suppliedBuffer.length || !crypto.timingSafeEqual(expectedBuffer, suppliedBuffer)) return res.status(400).json({ message: "Payment verification failed" });
+
+    const providerResponse = await fetch(`https://api.razorpay.com/v1/payments/${encodeURIComponent(paymentId)}`, {
+      headers: { Authorization: `Basic ${Buffer.from(`${process.env.RAZORPAY_KEY_ID}:${process.env.RAZORPAY_KEY_SECRET}`).toString("base64")}` },
+    });
+    const payment = await providerResponse.json();
+    if (!providerResponse.ok) return res.status(502).json({ message: "Could not confirm payment status with Razorpay" });
+    if (payment.order_id !== booking.paymentOrderId || payment.amount !== Math.round(booking.amount * 100) || payment.currency !== (process.env.RAZORPAY_CURRENCY || "INR")) return res.status(400).json({ message: "Payment does not match this booking" });
+    if (payment.status !== "captured") {
+      const pendingMatch = await VenueMatch.findById(match._id).populate("bookings.user", "name username");
+      pendingMatch._viewerId = req.user._id.toString();
+      return res.status(202).json({ paymentPending: true, match: serialize(pendingMatch) });
+    }
     booking.status = "confirmed";
     booking.paymentId = paymentId;
     await match.save();

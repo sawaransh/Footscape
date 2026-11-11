@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { ArrowLeft, CalendarDays, Check, Clock3, MapPin, ShieldCheck, Users } from 'lucide-react';
 import { BottomNav } from '../components/shared';
+import { useApp } from '../context/AppContext';
 import { apiRequest } from '../services/api';
 
 function loadRazorpay() {
@@ -18,6 +19,7 @@ const timeLabel = (date) => new Date(date).toLocaleTimeString('en-IN', { hour: '
 const fullDate = (date) => new Date(date).toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 
 export function VenueMatchPage({ navigate, params }) {
+  const { currentUser } = useApp();
   const [match, setMatch] = useState(null);
   const [paymentConfigured, setPaymentConfigured] = useState(false);
   const [side, setSide] = useState('A');
@@ -28,6 +30,7 @@ export function VenueMatchPage({ navigate, params }) {
   const refresh = useCallback(async () => {
     const data = await apiRequest(`/venues/matches/${params.matchId}`);
     setMatch(data.match); setPaymentConfigured(data.paymentConfigured);
+    return data.match;
   }, [params.matchId]);
 
   useEffect(() => {
@@ -52,11 +55,27 @@ export function VenueMatchPage({ navigate, params }) {
         name: 'Footscape',
         description: `${match.title} · Side ${side}`,
         order_id: result.order.id,
+        prefill: { name: currentUser?.name, email: currentUser?.email },
         theme: { color: '#54e879' },
         handler: async (payment) => {
           try {
             const verified = await apiRequest(`/venues/matches/${match.id}/bookings/verify`, { method: 'POST', body: JSON.stringify({ bookingId: result.bookingId, ...payment }) });
-            setMatch(verified.match); setMessage(`Payment confirmed. You're on Side ${side}!`);
+            setMatch(verified.match);
+            if (!verified.paymentPending) {
+              setMessage(`Payment confirmed. You're on Side ${side}!`);
+            } else {
+              setMessage('Payment received and is being confirmed. This page will update when your place is ready.');
+              let attempts = 0;
+              const poll = async () => {
+                attempts += 1;
+                try {
+                  const latest = await refresh();
+                  if (latest.myBooking === 'confirmed') setMessage(`Payment confirmed. You're on Side ${latest.mySide}!`);
+                  else if (attempts < 12) setTimeout(poll, 2500);
+                } catch { if (attempts < 12) setTimeout(poll, 2500); }
+              };
+              setTimeout(poll, 2500);
+            }
           } catch (error) { setMessage(error.message); await refresh(); }
         },
         modal: { ondismiss: () => { setBusy(false); setMessage('Checkout closed. Your place is held for 15 minutes while you complete payment.'); } },
